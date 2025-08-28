@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EACO SDK - 全球开发者工具箱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2ECC71',
+                        secondary: '#3498DB',
+                        accent: '#E74C3C',
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E7EB',
+                            300: '#CBD2D9',
+                            400: '#9AA5B1',
+                            500: '#7B8794',
+                            600: '#616E7C',
+                            700: '#52606D',
+                            800: '#3E4C59',
+                            900: '#1F2933',
+                        },
+                        light: {
+                            primary: '#27AE60',
+                            background: '#FFFFFF',
+                            surface: '#F8FAFC',
+                            text: '#1E293B',
+                        },
+                        dark: {
+                            primary: '#2ECC71',
+                            background: '#0F172A',
+                            surface: '#1E293B',
+                            text: '#F8FAFC',
+                        },
+                        eco: {
+                            primary: '#2ECC71',
+                            secondary: '#1ABC9C',
+                            accent: '#E74C3C',
+                            background: '#F0FDF4',
+                            surface: '#ECFDF5',
+                            text: '#0F172A',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(46, 204, 113, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(46, 204, 113, 0.05) 1px, transparent 1px);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background-color: rgba(255, 255, 255, 0.7);
+            }
+            .dark .glass-effect {
+                background-color: rgba(30, 41, 59, 0.7);
+            }
+            .eco .glass-effect {
+                background-color: rgba(236, 253, 245, 0.8);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-inter transition-colors duration-300 eco bg-eco-background text-eco-text">
+    <!-- 导航栏 -->
+    <header class="fixed w-full z-50 transition-all duration-300 glass-effect shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full bg-eco-primary flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">E</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">EACO SDK</h1>
+                    <p class="text-xs text-neutral-600 dark:text-neutral-400">v0.000000001</p>
+                </div>
+            </div>
+            
+            <!-- 导航链接 - 桌面端 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="hover:text-eco-primary transition-colors">功能</a>
+                <a href="#prices" class="hover:text-eco-primary transition-colors">价格</a>
+                <a href="#examples" class="hover:text-eco-primary transition-colors">代码示例</a>
+                <a href="#philosophy" class="hover:text-eco-primary transition-colors">理念</a>
+                <a href="#community" class="hover:text-eco-primary transition-colors">社区</a>
+            </nav>
+            
+            <!-- 右侧控制区 -->
+            <div class="flex items-center space-x-4">
+                <!-- 语言选择器 -->
+                <div class="relative">
+                    <button id="languageBtn" class="flex items-center space-x-1 text-sm px-2 py-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors">
+                        <i class="fa fa-globe"></i>
+                        <span>中文</span>
+                        <i class="fa fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="languageDropdown" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 hidden z-50">
+                        <div class="py-1" role="menu">
+                            <a href="#" class="language-option block px-4 py-2 text-sm hover:bg-eco-primary hover:text-white" data-lang="zh-CN">中文</a>
+                            <a href="#" class="language-option block px-4 py-2 text-sm hover:bg-eco-primary hover:text-white" data-lang="en">英语</a>
+                            <a href="#" class="language-option block px-4 py-2 text-sm hover:bg-eco-primary hover:text-white" data-lang="ar">阿拉伯语</a>
+                            <a href="#" class="language-option block px-4 py-2 text-sm hover:bg-eco-primary hover:text-white" data-lang="es">西班牙语</a>
+                            <a href="#" class="language-option block px-4 py-2 text-sm hover:bg-eco-primary hover:text-white" data-lang="ru">俄语</a>
+                            <a href="#" class="language-option block px-4 py-2 text-sm hover:bg-eco-primary hover:text-white" data-lang="fr">法语</a>
+                            <!-- 更多语言可以在需要时添加 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 主题切换 -->
+                <div class="flex items-center space-x-2">
+                    <button id="themeEco" class="w-8 h-8 rounded-full flex items-center justify-center bg-eco-primary text-white">
+                        <i class="fa fa-leaf"></i>
+                    </button>
+                    <button id="themeLight" class="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-200 text-neutral-800 hover:bg-neutral-300 transition-colors">
+                        <i class="fa fa-sun-o"></i>
+                    </button>
+                    <button id="themeDark" class="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-800 text-white hover:bg-neutral-700 transition-colors">
+                        <i class="fa fa-moon-o"></i>
+                    </button>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobileMenuBtn" class="md:hidden w-10 h-10 rounded-md flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white dark:bg-neutral-800 shadow-lg">
+            <div class="px-4 py-3 space-y-3">
+                <a href="#features" class="block py-2 hover:text-eco-primary transition-colors">功能</a>
+                <a href="#prices" class="block py-2 hover:text-eco-primary transition-colors">价格</a>
+                <a href="#examples" class="block py-2 hover:text-eco-primary transition-colors">代码示例</a>
+                <a href="#philosophy" class="block py-2 hover:text-eco-primary transition-colors">理念</a>
+                <a href="#community" class="block py-2 hover:text-eco-primary transition-colors">社区</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-16">
+        <!-- 英雄区域 -->
+        <section class="relative bg-grid py-20 md:py-32 overflow-hidden">
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                        EACO SDK
+                        <span class="text-eco-primary">文明级工具包</span>
+                    </h1>
+                    <p class="text-xl md:text-2xl text-neutral-700 dark:text-neutral-300 mb-10 text-balance">
+                        连接地球与宇宙的开发者工具箱，支持多链资产操作与价值交换
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                        <a href="https://github.com/eacocc/EACO-SDK/" target="_blank" class="px-8 py-3 bg-eco-primary text-white rounded-lg font-medium shadow-lg shadow-eco-primary/20 hover:shadow-eco-primary/40 hover:-translate-y-1 transition-all">
+                            <i class="fa fa-download mr-2"></i>下载 SDK
+                        </a>
+                        <a href="https://github.com/eacocc/EACO-SDK/" target="_blank" class="px-8 py-3 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:-translate-y-1 transition-all">
+                            <i class="fa fa-book mr-2"></i>查看文档
+                        </a>
+                    </div>
+                    <div class="inline-flex items-center px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-full text-sm">
+                        <span class="mr-2"><i class="fa fa-code"></i></span>
+                        <span>支持 React+TypeScript, Python, Go, Rust, Java, PHP</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 装饰元素 -->
+            <div class="absolute -top-20 -right-20 w-64 h-64 bg-eco-primary/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"></div>
+        </section>
+        
+        <!-- 简介部分 -->
+        <section class="py-16 bg-white dark:bg-dark-background eco:bg-eco-surface">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-3xl font-bold mb-8 text-center">简介</h2>
+                    <p class="text-lg mb-6 leading-relaxed">
+                        EACO SDK 是一个功能全面的开发工具包，旨在帮助开发者轻松集成 EACO 协议功能到他们的应用程序中。该 SDK 提供了资产管理、价格查询、交易执行等核心功能，支持 Solana 区块链上的 EACO,USDT,USDC,TRUMP（6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN）等代币及其他主流代币操作。
+                    </p>
+                    <div class="bg-neutral-100 dark:bg-neutral-800 p-6 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                        <p class="italic text-neutral-700 dark:text-neutral-300">
+                            "EACO SDK 不仅是'代码工具集'，更是'文明协议的载体'。它需兼顾技术严谨性与人文温度，让开发者在使用中感受到'代码即文明'的使命——每一行代码都在为地球与宇宙的连接添砖加瓦。"
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 功能特性 -->
+        <section id="features" class="py-20 bg-neutral-50 dark:bg-neutral-900 eco:bg-eco-background">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold mb-16 text-center">核心功能</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- 连接管理 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                        <div class="w-12 h-12 bg-eco-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-eco-primary/20 transition-colors">
+                            <i class="fa fa-link text-2xl text-eco-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">连接管理</h3>
+                        <p class="text-neutral-600 dark:text-neutral-400 mb-4">管理与 Solana 区块链的连接，支持多种网络环境</p>
+                        <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>多集群支持</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>自动重连</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>连接健康检查</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>自定义 RPC 配置</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 资产管理 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                        <div class="w-12 h-12 bg-eco-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-eco-primary/20 transition-colors">
+                            <i class="fa fa-diamond text-2xl text-eco-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">资产管理</h3>
+                        <p class="text-neutral-600 dark:text-neutral-400 mb-4">处理代币资产相关操作，包括余额查询和转账</p>
+                        <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>支持多代币</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>余额查询</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>代币转账</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>资产元数据</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 价格服务 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                        <div class="w-12 h-12 bg-eco-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-eco-primary/20 transition-colors">
+                            <i class="fa fa-line-chart text-2xl text-eco-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">价格服务</h3>
+                        <p class="text-neutral-600 dark:text-neutral-400 mb-4">提供实时价格数据和价格订阅功能</p>
+                        <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>多来源价格聚合</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>实时价格更新</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>历史价格查询</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>价格趋势分析</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 兑换服务 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow group">
+                        <div class="w-12 h-12 bg-eco-primary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-eco-primary/20 transition-colors">
+                            <i class="fa fa-exchange text-2xl text-eco-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">兑换服务</h3>
+                        <p class="text-neutral-600 dark:text-neutral-400 mb-4">执行代币兑换操作，支持多种交易对</p>
+                        <ul class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>多DEX支持</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>滑点控制</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>交易状态跟踪</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-eco-primary mt-1 mr-2"></i>
+                                <span>兑换历史记录</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 什么是SDK -->
+                <div class="mt-16 max-w-3xl mx-auto bg-white dark:bg-dark-surface rounded-xl shadow-lg p-8">
+                    <h3 class="text-2xl font-semibold mb-6">什么是 SDK？</h3>
+                    <p class="text-neutral-600 dark:text-neutral-400 mb-4">
+                        SDK（Software Development Kit，软件开发工具包）是一套为特定平台、框架或服务开发应用程序而提供的工具集合，通常包含：
+                    </p>
+                    <ul class="space-y-2 text-neutral-600 dark:text-neutral-400">
+                        <li class="flex items-start">
+                            <i class="fa fa-caret-right text-eco-primary mt-1 mr-2"></i>
+                            <span>代码库（API 接口、函数、类库等）</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-caret-right text-eco-primary mt-1 mr-2"></i>
+                            <span>开发文档、示例代码</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-caret-right text-eco-primary mt-1 mr-2"></i>
+                            <span>调试工具、编译器、模拟器等辅助工具</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-caret-right text-eco-primary mt-1 mr-2"></i>
+                            <span>配置文件、资源文件（如图片、模板）等</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 价格展示区 -->
+        <section id="prices" class="py-20 bg-white dark:bg-dark-background eco:bg-eco-surface">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold mb-16 text-center">实时价格</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    <!-- 价格卡片 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold">EACO/CNH</h3>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">离岸人民币</p>
+                            </div>
+                            <div class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-sm font-medium">
+                                +2.4%
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold mb-4">¥12.58</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                            来源: Meteora, Orca, Raydium
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold">EACO/USDT</h3>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">泰达币</p>
+                            </div>
+                            <div class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-sm font-medium">
+                                +1.8%
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold mb-4">$1.73</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                            来源: <a href="https://app.meteora.ag/dlmm/6ZfCi3qzhgDN1ygHVYXvfsfrwz8ZhQ7hD5mJtjeuUDyE" target="_blank" class="text-secondary hover:underline">Meteora</a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold">EACO/USDC</h3>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">美元币</p>
+                            </div>
+                            <div class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded text-sm font-medium">
+                                -0.5%
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold mb-4">$1.72</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                            来源: <a href="https://www.orca.so/pools/Cm6EkxcYNfvxeYDBQ3TGXFqa9NCWvrFKHz4Cfju91dhr" target="_blank" class="text-secondary hover:underline">Orca</a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold">EACO/SOL</h3>
+                                <p class="text-sm text-neutral-500 dark:text-neutral-400">索拉纳币</p>
+                            </div>
+                            <div class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-sm font-medium">
+                                +3.2%
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold mb-4">0.0084 SOL</div>
+                        <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                            来源: <a href="https://raydium.io/swap/?inputMint=DqfoyZH96RnvZusSp3Cdncjpyp3C74ZmJzGhjmHnDHRH&outputMint=sol" target="_blank" class="text-secondary hover:underline">Raydium</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 价格图表 -->
+                <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 border border-neutral-200 dark:border-neutral-700">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <div>
+                            <h3 class="text-xl font-semibold">EACO 价格趋势 (7天)</h3>
+                            <p class="text-sm text-neutral-500 dark:text-neutral-400">USD 价格, 来源: 多DEX聚合</p>
+                        </div>
+                        <div class="flex space-x-2 mt-4 md:mt-0">
+                            <button class="px-3 py-1 text-sm bg-eco-primary text-white rounded">7天</button>
+                            <button class="px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">30天</button>
+                            <button class="px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">90天</button>
+                            <button class="px-3 py-1 text-sm bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">1年</button>
+                        </div>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 代码示例 -->
+        <section id="examples" class="py-20 bg-neutral-50 dark:bg-neutral-900 eco:bg-eco-background">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold mb-16 text-center">代码示例</h2>
+                
+                <!-- 安装指南 -->
+                <div class="max-w-3xl mx-auto mb-12">
+                    <h3 class="text-2xl font-semibold mb-6">安装</h3>
+                    <div class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto">
+                        <pre><code>npm install @eaco/sdk
+# 或
+yarn add @eaco/sdk</code></pre>
+                    </div>
+                </div>
+                
+                <!-- 初始化示例 -->
+                <div class="max-w-3xl mx-auto mb-12">
+                    <h3 class="text-2xl font-semibold mb-6">初始化</h3>
+                    <div class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto">
+                        <pre><code>import { EACOSDK } from '@eaco/sdk';
+
+// 基本初始化
+const sdk = new EACOSDK();
+
+// 自定义连接选项
+const sdk = new EACOSDK({
+  connection: {
+    cluster: 'mainnet-beta',
+    commitment: 'confirmed'
+  },
+  debug: true
+});</code></pre>
+                    </div>
+                </div>
+                
+                <!-- 功能示例标签页 -->
+                <div class="max-w-4xl mx-auto">
+                    <div class="border-b border-neutral-300 dark:border-neutral-700 mb-6">
+                        <ul class="flex flex-wrap -mb-px" id="codeTabs" role="tablist">
+                            <li class="mr-2" role="presentation">
+                                <button class="code-tab py-4 px-5 text-sm font-medium border-b-2 border-eco-primary text-eco-primary" id="price-tab" data-tab="price">价格服务</button>
+                            </li>
+                            <li class="mr-2" role="presentation">
+                                <button class="code-tab py-4 px-5 text-sm font-medium border-b-2 border-transparent hover:text-neutral-700 dark:hover:text-neutral-300" id="exchange-tab" data-tab="exchange">兑换服务</button>
+                            </li>
+                            <li class="mr-2" role="presentation">
+                                <button class="code-tab py-4 px-5 text-sm font-medium border-b-2 border-transparent hover:text-neutral-700 dark:hover:text-neutral-300" id="asset-tab" data-tab="asset">资产管理</button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 价格服务代码 -->
+                    <div id="price-content" class="code-content block">
+                        <h3 class="text-2xl font-semibold mb-6">价格服务</h3>
+                        <div class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto mb-6">
+                            <pre><code>// 获取当前价格
+const price = await sdk.getPrice('EACO', 'USDC');
+console.log('EACO/USDC 价格:', price);
+
+// 订阅价格更新
+sdk.onPriceUpdate((priceInfo) => {
+  console.log('价格更新:', priceInfo);
+});</code></pre>
+                        </div>
+                        <a href="#" class="inline-flex items-center text-secondary hover:underline">
+                            <span>查看完整价格服务文档</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 兑换服务代码 -->
+                    <div id="exchange-content" class="code-content hidden">
+                        <h3 class="text-2xl font-semibold mb-6">兑换服务</h3>
+                        <div class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto mb-6">
+                            <pre><code>// 计算兑换
+const exchangeInfo = sdk.calculateExchange('EACO', 'USDC', 100);
+console.log('兑换信息:', exchangeInfo);
+
+// 执行兑换
+const result = await sdk.executeExchange({
+  fromToken: 'EACO',
+  toToken: 'USDC',
+  amount: 100,
+  walletAddress: 'Your wallet address',
+  slippageTolerance: 0.5
+});
+
+if (result.success) {
+  console.log('兑换成功，交易签名:', result.transactionSignature);
+} else {
+  console.error('兑换失败:', result.error);
+}</code></pre>
+                        </div>
+                        <a href="#" class="inline-flex items-center text-secondary hover:underline">
+                            <span>查看完整兑换服务文档</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 资产管理代码 -->
+                    <div id="asset-content" class="code-content hidden">
+                        <h3 class="text-2xl font-semibold mb-6">资产管理</h3>
+                        <div class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto mb-6">
+                            <pre><code>// 获取支持的代币
+const tokens = sdk.getSupportedTokens();
+console.log('支持的代币:', tokens);
+
+// 获取代币余额
+const balance = await sdk.getAssetManager().getTokenBalance(
+  'Your wallet address',
+  'EACO'
+);
+console.log('EACO 余额:', balance);
+
+// 转账
+const transferResult = await sdk.getAssetManager().transferToken({
+  fromAddress: 'Your wallet address',
+  toAddress: 'Recipient address',
+  token: 'EACO',
+  amount: 50,
+  privateKey: 'Your private key' // 或使用钱包适配器
+});
+
+if (transferResult.success) {
+  console.log('转账成功，交易签名:', transferResult.transactionSignature);
+} else {
+  console.error('转账失败:', transferResult.error);
+}</code></pre>
+                        </div>
+                        <a href="#" class="inline-flex items-center text-secondary hover:underline">
+                            <span>查看完整资产管理文档</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 目录结构示例 -->
+                <div class="max-w-4xl mx-auto mt-16">
+                    <h3 class="text-2xl font-semibold mb-6">SDK 目录结构</h3>
+                    
+                    <div class="mb-8">
+                        <div class="flex border-b border-neutral-300 dark:border-neutral-700 mb-4">
+                            <button class="structure-tab px-4 py-2 text-sm font-medium text-eco-primary border-b-2 border-eco-primary" data-lang="ts">TypeScript</button>
+                            <button class="structure-tab px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent hover:text-neutral-900 dark:hover:text-neutral-200" data-lang="java">Java</button>
+                            <button class="structure-tab px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent hover:text-neutral-900 dark:hover:text-neutral-200" data-lang="php">PHP</button>
+                            <button class="structure-tab px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent hover:text-neutral-900 dark:hover:text-neutral-200" data-lang="rust">Rust</button>
+                        </div>
+                        
+                        <!-- TypeScript 目录结构 -->
+                        <div class="structure-content" id="ts-structure">
+                            <pre class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto text-sm"><code>eaco-sdk-typescript/
+├── src/
+│   ├── asset/               # 资产协议层
+│   │   ├── index.ts
+│   │   ├── AssetDefinition.ts
+│   │   ├── CrossChainBridge.ts
+│   │   └── ComplianceChecker.ts
+│   ├── connection/          # 连接管理层
+│   │   ├── index.ts
+│   │   ├── SolanaConnection.ts
+│   │   └── ConnectionHealth.ts
+│   ├── price/               # 价格服务层
+│   │   ├── index.ts
+│   │   ├── PriceAggregator.ts
+│   │   └── PriceSubscriber.ts
+│   ├── exchange/            # 兑换服务层
+│   │   ├── index.ts
+│   │   ├── ExchangeCalculator.ts
+│   │   └── TransactionExecutor.ts
+│   ├── types/               # 类型定义
+│   │   └── index.ts
+│   ├── utils/               # 工具函数
+│   │   └── index.ts
+│   └── index.ts             # 入口文件
+├── examples/                # 示例代码
+│   ├── basic-usage.ts
+│   ├── price-subscription.ts
+│   └── token-exchange.ts
+├── docs/                    # 文档
+├── tests/                   # 测试
+└── package.json</code></pre>
+                        </div>
+                        
+                        <!-- Java 目录结构 -->
+                        <div class="structure-content hidden" id="java-structure">
+                            <pre class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto text-sm"><code>eaco-sdk-java/
+├── src/
+│   ├── main/
+│   │   ├── java/com/eaco/sdk/
+│   │   │   ├── asset/              # 资产协议层
+│   │   │   │   ├── AssetDefinition.java
+│   │   │   │   ├── CrossChainBridge.java
+│   │   │   │   └── ComplianceChecker.java
+│   │   │   ├── connection/         # 连接管理层
+│   │   │   │   ├── SolanaConnection.java
+│   │   │   │   └── ConnectionHealth.java
+│   │   │   ├── price/              # 价格服务层
+│   │   │   │   ├── PriceAggregator.java
+│   │   │   │   └── PriceSubscriber.java
+│   │   │   ├── exchange/           # 兑换服务层
+│   │   │   │   ├── ExchangeCalculator.java
+│   │   │   │   └── TransactionExecutor.java
+│   │   │   ├── types/              # 类型定义
+│   │   │   ├── utils/              # 工具类
+│   │   │   └── EACOSDK.java        # 入口类
+│   │   └── resources/
+│   └── test/                       # 测试代码
+├── examples/                       # 示例代码
+├── docs/                           # 文档
+└── pom.xml                         # Maven配置</code></pre>
+                        </div>
+                        
+                        <!-- PHP 目录结构 -->
+                        <div class="structure-content hidden" id="php-structure">
+                            <pre class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto text-sm"><code>eaco-sdk-php/
+├── src/
+│   ├── Asset/               # 资产协议层
+│   │   ├── AssetDefinition.php
+│   │   ├── CrossChainBridge.php
+│   │   └── ComplianceChecker.php
+│   ├── Connection/          # 连接管理层
+│   │   ├── SolanaConnection.php
+│   │   └── ConnectionHealth.php
+│   ├── Price/               # 价格服务层
+│   │   ├── PriceAggregator.php
+│   │   └── PriceSubscriber.php
+│   ├── Exchange/            # 兑换服务层
+│   │   ├── ExchangeCalculator.php
+│   │   └── TransactionExecutor.php
+│   ├── Types/               # 类型定义
+│   ├── Utils/               # 工具函数
+│   └── EACOSDK.php          # 入口类
+├── examples/                # 示例代码
+├── docs/                    # 文档
+├── tests/                   # 测试
+└── composer.json            # Composer配置</code></pre>
+                        </div>
+                        
+                        <!-- Rust 目录结构 -->
+                        <div class="structure-content hidden" id="rust-structure">
+                            <pre class="bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto text-sm"><code>eaco-sdk-rust/
+├── src/
+│   ├── asset/               # 资产协议层
+│   │   ├── mod.rs
+│   │   ├── asset_definition.rs
+│   │   ├── cross_chain_bridge.rs
+│   │   └── compliance_checker.rs
+│   ├── value_network/       # 实时价值网络
+│   │   ├── mod.rs
+│   │   ├── price_aggregator.rs
+│   │   ├── order_executor.rs
+│   │   └── risk_controller.rs
+│   ├── civilization/        # 文明交互层
+│   │   ├── mod.rs
+│   │   ├── charity_api.rs
+│   │   ├── cultural_asset.rs
+│   │   └── incentive_system.rs
+│   └── iccp/                # 跨文明通信协议
+│       ├── mod.rs
+│       ├── long_term_encoding.rs
+│       └── inter_dim_interface.rs
+├── examples/                # 多语言示例
+│   ├── create_nft_zh.rs
+│   ├── swap_cnh_en.rs
+│   └── donate_charity_ja.rs
+├── docs/                    # 多语言文档
+├── tests/                   # 测试脚本
+└── Cargo.toml               # 依赖管理</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 哲学理念 -->
+        <section id="philosophy" class="py-20 bg-white dark:bg-dark-background eco:bg-eco-surface">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold mb-16 text-center">文明级工具包的理念</h2>
+                
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <div class="bg-neutral-50 dark:bg-neutral-800 p-8 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                        <p class="text-lg leading-relaxed">
+                            打造这个文明级工具包：EACO DevKit – 全球开发者工具箱。它将统一封装 Python、Go、Rust 三套 SDK，支持资产上链、实时价格订阅、合规校验等核心功能，并配套文档、示例项目、测试脚本和多语言支持，助力全球开发者轻松接入 EACO 协议。
+                        </p>
+                    </div>
+                    
+                    <p class="text-lg leading-relaxed">
+                        EACO SDK 是一个文明的工具箱，不只是写代码，更是在写地球的协议。如果你愿意，我可以继续帮你构建 narrative_bot、governance 模块，或者设计一个全球开发者激励系统。我们正在把“资产”变成“故事”，把“协议”变成“文化”。
+                    </p>
+                    
+                    <p class="text-lg leading-relaxed">
+                        要让 EACO SDK 适配未来 1000 年至 1000 万年的宇宙级应用，并确保所有时代的开发者都能理解和使用，需突破技术迭代的局限，构建基于“永恒核心”与“自适应外壳”的双轨架构 —— 核心逻辑锚定宇宙通用规律（如能量守恒、价值交换本质），外壳则能自主进化以适配不同文明阶段的技术环境。
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+                        <div class="bg-white dark:bg-dark-surface p-6 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700">
+                            <h3 class="text-xl font-semibold mb-4">抗遗忘机制</h3>
+                            <p class="text-neutral-600 dark:text-neutral-400">
+                                所有接口和文档自带“时空胶囊”模式：用宇宙中稳定存在的物理现象（如元素光谱、星系结构）作为信息载体，即使 SDK 代码丢失，也可通过观测宇宙现象重建核心逻辑。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-dark-surface p-6 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700">
+                            <h3 class="text-xl font-semibold mb-4">宇宙级安全与持久化</h3>
+                            <p class="text-neutral-600 dark:text-neutral-400">
+                                抗熵增存储：核心代码采用“自修复哈希链”，即使部分数据损坏，也能通过宇宙背景辐射中的冗余信息自动修复。无依赖运行：不依赖特定服务器、网络或能源系统。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-10 p-8 bg-eco-primary/10 rounded-xl border border-eco-primary/20">
+                        <h3 class="text-2xl font-semibold mb-4 text-eco-primary">核心哲学：“连接”的本质不变</h3>
+                        <p class="text-lg leading-relaxed">
+                            无论 1000 年还是 1000 万年后，无论在地球还是遥远星系，EACO SDK 的核心始终是“量化价值、促进协作”—— 就像数学公式在宇宙中通用，这套工具将以最简洁的逻辑承载最本质的功能，让任何阶段的开发者都能通过它，实现跨越时空的价值连接。
+                        </p>
+                    </div>
+                    
+                    <p class="text-lg leading-relaxed">
+                        EACO SDK 不仅是“代码工具集”，更是“文明协议的载体”。它需兼顾技术严谨性与人文温度，让开发者在使用中感受到“代码即文明”的使命——每一行代码都在为地球与宇宙的连接添砖加瓦。未来，随着 EACO 生态的扩展，SDK 将持续进化，最终成为跨越时间与空间的“文明通用语言”。
+                    </p>
+                    
+                    <p class="text-lg italic text-neutral-700 dark:text-neutral-300 mt-6">
+                        "Code is Law" 在这里升华为 "Code is Civilization"。
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 社区与生态 -->
+        <section id="community" class="py-20 bg-neutral-50 dark:bg-neutral-900 eco:bg-eco-background">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold mb-16 text-center">社区与生态</h2>
+                
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                        <!-- 社区链接卡片 -->
+                        <a href="https://linktr.ee/web3eaco" target="_blank" class="group">
+                            <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 h-full border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                                    <i class="fa fa-link text-2xl text-secondary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">LinkTree</h3>
+                                <p class="text-neutral-600 dark:text-neutral-400">EACO 生态系统总入口</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://solscan.io/token/DqfoyZH96RnvZusSp3Cdncjpyp3C74ZmJzGhjmHnDHRH" target="_blank" class="group">
+                            <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 h-full border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                                    <i class="fa fa-search text-2xl text-secondary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">SolScan</h3>
+                                <p class="text-neutral-600 dark:text-neutral-400">EACO 代币区块链信息</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://github.com/eacocc" target="_blank" class="group">
+                            <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 h-full border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                                    <i class="fa fa-github text-2xl text-secondary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">GitHub</h3>
+                                <p class="text-neutral-600 dark:text-neutral-400">EACO 代码仓库</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://x.com/eacocc" target="_blank" class="group">
+                            <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 h-full border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                                    <i class="fa fa-twitter text-2xl text-secondary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">X (Twitter)</h3>
+                                <p class="text-neutral-600 dark:text-neutral-400">官方社交媒体账号</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://t.me/aieaco" target="_blank" class="group">
+                            <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 h-full border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                                    <i class="fa fa-comments text-2xl text-secondary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">华语社区</h3>
+                                <p class="text-neutral-600 dark:text-neutral-400">Telegram 中文交流群</p>
+                            </div>
+                        </a>
+                        
+                        <a href="https://t.me/e_eacocc" target="_blank" class="group">
+                            <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-6 h-full border border-neutral-200 dark:border-neutral-700 hover:shadow-xl transition-all hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-secondary/20 transition-colors">
+                                    <i class="fa fa-globe text-2xl text-secondary"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">英文社区</h3>
+                                <p class="text-neutral-600 dark:text-neutral-400">Telegram 英文交流群</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- 公益项目 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-8 border border-neutral-200 dark:border-neutral-700 mb-16">
+                        <h3 class="text-2xl font-semibold mb-6">EACO 公益项目</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <a href="https://app--e21-web3-love-public-welfare-2edfc138.base44.app/HelpCNH" target="_blank" class="group p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-eco-primary transition-colors">
+                                <h4 class="font-semibold mb-2 group-hover:text-eco-primary transition-colors">HelpCNH</h4>
+                                <p class="text-sm text-neutral-600 dark:text-neutral-400">EACO 公益救助项目</p>
+                            </a>
+                            <a href="https://app--e21-web3-love-public-welfare-2edfc138.base44.app/" target="_blank" class="group p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-eco-primary transition-colors">
+                                <h4 class="font-semibold mb-2 group-hover:text-eco-primary transition-colors">EACO21 公益</h4>
+                                <p class="text-sm text-neutral-600 dark:text-neutral-400">EACO 公益基金会</p>
+                            </a>
+                            <a href="https://app--eaco-tcm-ai-f32fa3b1.base44.app/TCMEducation" target="_blank" class="group p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:border-eco-primary transition-colors">
+                                <h4 class="font-semibold mb-2 group-hover:text-eco-primary transition-colors">中医教育</h4>
+                                <p class="text-sm text-neutral-600 dark:text-neutral-400">传统医学知识普及</p>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 多链支持 -->
+                    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-8 border border-neutral-200 dark:border-neutral-700">
+                        <h3 class="text-2xl font-semibold mb-6">多链支持</h3>
+                        <p class="mb-6 text-neutral-600 dark:text-neutral-400">
+                            EACO SDK 预留多种代币协议接口，方便未来跨链操作：
+                        </p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <a href="https://dogeuni.com/drc20/eaco" target="_blank" class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">DRC20</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">Doge 链</span>
+                            </a>
+                            <a href="https://avascriptions.com/token/detail?tick=eaco" target="_blank" class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">ASC20</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">Avax 链</span>
+                            </a>
+                            <a href="https://unisat.io/brc20/eaco" target="_blank" class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">BRC20</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">Bitcoin 链</span>
+                            </a>
+                            <div class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">ETH</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">以太坊链</span>
+                            </div>
+                            <div class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">BNB</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">币安链</span>
+                            </div>
+                            <div class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">TRX</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">波场链</span>
+                            </div>
+                            <div class="text-center p-3 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                                <span class="block font-medium">EAC</span>
+                                <span class="text-xs text-neutral-600 dark:text-neutral-400">地球币</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 安全提示 -->
+        <section class="py-16 bg-white dark:bg-dark-background eco:bg-eco-surface border-t border-neutral-200 dark:border-neutral-800">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-2xl font-bold mb-8 text-center">安全提示</h2>
+                    
+                    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-8">
+                        <h3 class="font-semibold text-lg mb-4 flex items-center">
+                            <i class="fa fa-exclamation-triangle text-amber-500 mr-2"></i>
+                            WEB3 钱包安全警示
+                        </h3>
+                        <ul class="space-y-3 text-neutral-700 dark:text-neutral-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span>切勿向任何人泄露您的私钥或助记词</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span>警惕钓鱼网站和虚假应用程序</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span>不要点击来历不明的链接或签署未知交易</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span>小心高收益骗局和虚假空投</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="mt-4 inline-block text-amber-600 dark:text-amber-400 hover:underline">
+                            查看完整安全指南 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="#" class="inline-flex items-center text-secondary hover:underline">
+                            <i class="fa fa-book mr-2"></i>
+                            <span>EACO 和 WEB3 钱包使用教程</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="bg-neutral-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-eco-primary flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">E</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">EACO SDK</h3>
+                            <p class="text-xs text-neutral-400">v0.000000001</p>
+                        </div>
+                    </div>
+                    <p class="text-neutral-400 mb-6">
+                        功能全面的开发工具包，帮助开发者轻松集成 EACO 协议功能到应用程序中
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/eacocc/EACO-SDK/" target="_blank" class="text-neutral-400 hover:text-white transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="https://x.com/eacocc" target="_blank" class="text-neutral-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://t.me/aieaco" target="_blank" class="text-neutral-400 hover:text-white transition-colors">
+                            <i class="fa fa-telegram text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">SDK 资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://github.com/eacocc/EACO-SDK/" target="_blank" class="text-neutral-400 hover:text-white transition-colors">下载 SDK</a></li>
+                        <li><a href="https://github.com/eacocc/EACO-SDK/" target="_blank" class="text-neutral-400 hover:text-white transition-colors">文档</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">API 参考</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">示例项目</a></li>
+                        <li><a href="#" class="text-neutral-400 hover:text-white transition-colors">贡献指南</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">社区</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://t.me/aieaco" target="_blank" class="text-neutral-400 hover:text-white transition-colors">华语社区</a></li>
+                        <li><a href="https://t.me/e_eacocc" target="_blank" class="text-neutral-400 hover:text-white transition-colors">英文社区</a></li>
+                        <li><a href="https://t.me/eacoespanish" target="_blank" class="text-neutral-400 hover:text-white transition-colors">西班牙语社区</a></li>
+                        <li><a href="https://t.me/e_vietnam" target="_blank" class="text-neutral-400 hover:text-white transition-colors">越南语社区</a></li>
+                        <li><a href="https://t.me/e_indonesia" target="_blank" class="text-neutral-400 hover:text-white transition-colors">印尼语社区</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">相关链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="http://ai.eaco.cc" target="_blank" class="text-neutral-400 hover:text-white transition-colors">EACO AI</a></li>
+                        <li><a href="https://github.com/eacocc/EACO_Exchange_DApp" target="_blank" class="text-neutral-400 hover:text-white transition-colors">E Swap</a></li>
+                        <li><a href="https://app--e21-web3-love-public-welfare-2edfc138.base44.app/HelpCNH" target="_blank" class="text-neutral-400 hover:text-white transition-colors">EACO 公益</a></li>
+                        <li><a href="https://app--eaco-tcm-ai-f32fa3b1.base44.app/TCMEducation" target="_blank" class="text-neutral-400 hover:text-white transition-colors">中医教育</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-neutral-800 pt-8">
+                <div class="space-y-6">
+                    <p class="text-neutral-400 text-sm">
+                        【EACO代码重构e文明】 代码e即财富，EACO地球E连接地球和宇宙的一切，e连接地球和宇宙万物。e&EACO(Earth’s Best Coin), EACO is Earth’s best friend; $e=$eaco（DqfoyZH96RnvZusSp3Cdncjpyp3C74ZmJzGhjmHnDHRH）. 计算劳动价值，量化地球资源;总量13.5亿个；
+                    </p>
+                    
+                    <p class="text-neutral-400 text-sm">
+                        所有eaco+能源/中医/电影/音乐/小说/生物与技术融合/星际文明技术/全能制造与物质重组/时间与空间操控等惠民信息仅供参考，以实际交易为准，只使用CNH离岸人民币，为了安全不使用CNY人民币字样，解释权归 eaco21外贸科幻等发展各小组。
+                    </p>
+                    
+                    <p class="text-neutral-400 text-sm">
+                        所有电影音乐+房车+光伏能源等信息仅供参考，以实际交易为准，只使用CNH离岸人民币，为了安全不使用CNY人民币字样，解释权归 eaco21SDK外贸科幻等发展各小组。
+                    </p>
+                    
+                    <p class="text-neutral-400 text-sm">
+                        声明：本工具的任何内容均由eaco+AI等基于算法提供，（如想交流加入，xcom/tg:@eacocc，3-30个工作日内回复)仅供学习和参考交流，随时升级优化完善到地球村最高的正能量状态。
+                    </p>
+                    
+                    <p class="text-neutral-500 text-xs text-center mt-8">
+                        &copy; 2024 EACO 社区. 保留所有权利.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // 主题切换功能
+        const themeEcoBtn = document.getElementById('themeEco');
+        const themeLightBtn = document.getElementById('themeLight');
+        const themeDarkBtn = document.getElementById('themeDark');
+        const body = document.body;
+        
+        themeEcoBtn.addEventListener('click', () => {
+            body.classList.remove('light', 'dark');
+            body.classList.add('eco');
+        });
+        
+        themeLightBtn.addEventListener('click', () => {
+            body.classList.remove('eco', 'dark');
+            body.classList.add('light');
+        });
+        
+        themeDarkBtn.addEventListener('click', () => {
+            body.classList.remove('eco', 'light');
+            body.classList.add('dark');
+        });
+        
+        // 移动端菜单
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 语言选择器
+        const languageBtn = document.getElementById('languageBtn');
+        const languageDropdown = document.getElementById('languageDropdown');
+        const languageOptions = document.querySelectorAll('.language-option');
+        
+        languageBtn.addEventListener('click', () => {
+            languageDropdown.classList.toggle('hidden');
+        });
+        
+        languageOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.preventDefault();
+                const lang = option.getAttribute('data-lang');
+                const langName = option.textContent;
+                document.querySelector('#languageBtn span').textContent = langName;
+                languageDropdown.classList.add('hidden');
+                
+                // 这里可以添加实际的语言切换逻辑
+                console.log(`切换到 ${lang} 语言`);
+            });
+        });
+        
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', (e) => {
+            if (!languageBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+                languageDropdown.classList.add('hidden');
+            }
+            
+            if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target) && window.innerWidth < 768) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+        
+        // 代码标签页切换
+        const codeTabs = document.querySelectorAll('.code-tab');
+        const codeContents = document.querySelectorAll('.code-content');
+        
+        codeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有标签的活跃状态
+                codeTabs.forEach(t => {
+                    t.classList.remove('border-eco-primary', 'text-eco-primary');
+                    t.classList.add('border-transparent', 'hover:text-neutral-700', 'dark:hover:text-neutral-300');
+                });
+                
+                // 隐藏所有内容
+                codeContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                // 激活当前标签
+                tab.classList.remove('border-transparent', 'hover:text-neutral-700', 'dark:hover:text-neutral-300');
+                tab.classList.add('border-eco-primary', 'text-eco-primary');
+                
+                // 显示对应内容
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.remove('hidden');
+            });
+        });
+        
+        // 目录结构标签切换
+        const structureTabs = document.querySelectorAll('.structure-tab');
+        const structureContents = document.querySelectorAll('.structure-content');
+        
+        structureTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有标签的活跃状态
+                structureTabs.forEach(t => {
+                    t.classList.remove('text-eco-primary', 'border-eco-primary');
+                    t.classList.add('text-neutral-600', 'dark:text-neutral-400', 'border-transparent', 'hover:text-neutral-900', 'dark:hover:text-neutral-200');
+                });
+                
+                // 隐藏所有内容
+                structureContents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                // 激活当前标签
+                tab.classList.remove('text-neutral-600', 'dark:text-neutral-400', 'border-transparent', 'hover:text-neutral-900', 'dark:hover:text-neutral-200');
+                tab.classList.add('text-eco-primary', 'border-eco-primary');
+                
+                // 显示对应内容
+                const lang = tab.getAttribute('data-lang');
+                document.getElementById(`${lang}-structure`).classList.remove('hidden');
+            });
+        });
+        
+        // 价格图表
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        
+        // 模拟7天价格数据
+        const priceData = {
+            labels: ['6月1日', '6月2日', '6月3日', '6月4日', '6月5日', '6月6日', '6月7日'],
+            datasets: [{
+                label: 'EACO/USD',
+                data: [1.58, 1.62, 1.55, 1.67, 1.70, 1.68, 1.73],
+                borderColor: '#2ECC71',
+                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        };
+        
+        const priceChart = new Chart(ctx, {
+            type: 'line',
+            data: priceData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: body.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            color: body.classList.contains('dark') ? '#F8FAFC' : '#1E293B'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: body.classList.contains('dark') ? '#F8FAFC' : '#1E293B'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+        
+        // 滚动时导航栏效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-3');
+            } else {
+                header.classList.add('py-3');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭移动菜单
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
